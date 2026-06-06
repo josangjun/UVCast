@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_background_2x2"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#EF1D1D20"
+    android:padding="12dp">
+
+    <!-- Location -->
+    <TextView
+        android:id="@+id/widget_location_2x2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="서울 종로구"
+        android:textColor="#FFA1A1AA"
+        android:textSize="11sp" />
+
+    <!-- Big UV Badge -->
+    <LinearLayout
+        android:id="@+id/uv_badge_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/widget_uv_num_2x2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5"
+            android:textColor="#FFF97316"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_level_badge_2x2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#33F97316"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:text="보통"
+            android:textColor="#FFF97316"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Footer containing time and refresh button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/widget_time_2x2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="수동 업데이트"
+            android:textColor="#FF71717A"
+            android:textSize="9sp" />
+
+        <ImageView
+            android:id="@+id/btn_refresh_2x2"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@android:drawable/ic_menu_rotate"
+            android:contentDescription="Refresh" />
+    </LinearLayout>
+
+</RelativeLayout>

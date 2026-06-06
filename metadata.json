@@ -1,0 +1,6 @@
+{
+  "name": "UVCast 자외선 위젯 매니저",
+  "description": "안드로이드 홈화면 자외선지수 위젯 설정 및 현재 위치의 실시간 자외선 정보를 알려주는 동반자 어플리케이션입니다.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

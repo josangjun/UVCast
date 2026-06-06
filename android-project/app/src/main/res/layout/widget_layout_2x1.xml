@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_background_2x1"
+    android:layout_width="match_match"
+    android:layout_height="match_match"
+    android:background="#E6222224"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <!-- Accent Indicator line -->
+    <View
+        android:id="@+id/accent_bar"
+        android:layout_width="4dp"
+        android:layout_height="match_parent"
+        android:background="#FFF97316" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/widget_location_2x1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="서울특별시 종로구"
+            android:textColor="#FFA1A1AA"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/widget_level_text_2x1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="자외선 수준: 보통"
+            android:textColor="#FFFFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/btn_refresh_2x1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="4dp">
+
+        <TextView
+            android:id="@+id/widget_uv_num_2x1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4"
+            android:textColor="#FFF97316"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="UV"
+            android:textColor="#FFA1A1AA"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+</LinearLayout>
