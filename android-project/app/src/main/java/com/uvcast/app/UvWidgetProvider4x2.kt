@@ -13,7 +13,7 @@ class UvWidgetProvider4x2 : android.appwidget.AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         if (intent.action == UvWidgetHelper.ACTION_REFRESH_WIDGET) {
-            UvWidgetHelper.updateAllWidgets(context)
+            UvWidgetHelper.refreshWidgetWithGps(context)
         }
     }
 }

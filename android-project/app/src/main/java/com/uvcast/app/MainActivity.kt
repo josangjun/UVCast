@@ -50,6 +50,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // 캐시 데이터가 있다면 즉시 UI 상태에 먼저 로드
+        loadCachedUvData()
+        
         // Initial fetch with default coordinates
         fetchLocationAndUv()
 
@@ -62,6 +65,21 @@ class MainActivity : ComponentActivity() {
                     MainScreen()
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 앱으로 돌아왔을 때 위젯 등에서 갱신한 최신 데이터가 있다면 즉시 반영
+        loadCachedUvData()
+    }
+
+    private fun loadCachedUvData() {
+        val cached = UvLocationStore.loadUvData(this)
+        if (cached != null) {
+            uvIndexState.value = cached.uvIndex
+            locationNameState.value = cached.locationName
+            lastUpdatedState.value = cached.lastUpdated
         }
     }
 
@@ -90,6 +108,8 @@ class MainActivity : ComponentActivity() {
                     
                     CoroutineScope(Dispatchers.IO).launch {
                         val uvData = UvWeatherService.fetchUvData(this@MainActivity, lat, lgt)
+                        // 캐시에 최신 데이터 저장
+                        UvLocationStore.saveUvData(this@MainActivity, uvData)
                         withContext(Dispatchers.Main) {
                             uvIndexState.value = uvData.uvIndex
                             locationNameState.value = uvData.locationName
@@ -114,6 +134,8 @@ class MainActivity : ComponentActivity() {
         UvLocationStore.save(this, lat, lgt)
         CoroutineScope(Dispatchers.IO).launch {
             val uvData = UvWeatherService.fetchUvData(this@MainActivity, lat, lgt)
+            // 캐시에 최신 데이터 저장
+            UvLocationStore.saveUvData(this@MainActivity, uvData)
             withContext(Dispatchers.Main) {
                 uvIndexState.value = uvData.uvIndex
                 locationNameState.value = if (uvData.locationName.startsWith("위도 ")) fallbackCity else uvData.locationName

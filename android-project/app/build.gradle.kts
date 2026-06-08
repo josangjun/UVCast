@@ -57,6 +57,15 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    applicationVariants.all {
+        outputs.all {
+            val output = this as com.android.build.gradle.outputs.BaseVariantOutput
+            if (name == "release") {
+                output.outputFileName = "uvcast-release.apk"
+            }
+        }
+    }
 }
 
 dependencies {
