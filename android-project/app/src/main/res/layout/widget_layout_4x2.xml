@@ -70,11 +70,13 @@
     </LinearLayout>
 
     <!-- Dividing accent lines -->
-    <View
+    <ImageView
         android:layout_width="1dp"
         android:layout_height="match_parent"
         android:layout_marginHorizontal="10dp"
-        android:background="#1affffff" />
+        android:background="#1affffff"
+        android:contentDescription="@null"
+        android:importantForAccessibility="no" />
 
     <!-- Right Column: Forecast Hours -->
     <LinearLayout

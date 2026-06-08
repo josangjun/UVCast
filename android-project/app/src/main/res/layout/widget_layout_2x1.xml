@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_background_2x1"
-    android:layout_width="match_match"
-    android:layout_height="match_match"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:background="#E6222224"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:padding="12dp">
 
     <!-- Accent Indicator line -->
-    <View
+    <ImageView
         android:id="@+id/accent_bar"
         android:layout_width="4dp"
         android:layout_height="match_parent"
-        android:background="#FFF97316" />
+        android:background="#FFF97316"
+        android:contentDescription="@null"
+        android:importantForAccessibility="no" />
 
     <LinearLayout
         android:layout_width="0dp"

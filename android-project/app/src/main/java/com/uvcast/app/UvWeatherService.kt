@@ -1,5 +1,8 @@
 package com.uvcast.app
 
+import android.content.Context
+import android.location.Address
+import android.location.Geocoder
 import android.util.Log
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -14,7 +17,7 @@ object UvWeatherService {
     private const val TAG = "UvWeatherService"
 
     // Fetch UV Index from free Open-Meteo coordinate weather API
-    fun fetchUvData(lat: Double, lgt: Double): UvData {
+    fun fetchUvData(context: Context, lat: Double, lgt: Double): UvData {
         var connection: HttpURLConnection? = null
         try {
             val urlString = "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lgt&hourly=uv_index&daily=uv_index_max&timezone=auto"
@@ -59,13 +62,11 @@ object UvWeatherService {
 
                 val df = SimpleDateFormat("HH:mm", Locale.KOREA)
                 val lastUpdatedTime = df.format(Date())
-
-                // Clean-up coordinates to string location for indicator
-                val rawLocationName = String.format(Locale.US, "위도: %.2f 경도: %.2f", lat, lgt)
+                val resolvedLocationName = resolveLocationName(context, lat, lgt)
 
                 return UvData(
                     uvIndex = currentUv,
-                    locationName = rawLocationName,
+                    locationName = resolvedLocationName,
                     latitude = lat,
                     longitude = lgt,
                     lastUpdated = lastUpdatedTime,
@@ -77,6 +78,8 @@ object UvWeatherService {
         } finally {
             connection?.disconnect()
         }
+
+        val resolvedLocationName = resolveLocationName(context, lat, lgt)
 
         // Return a realistic mock-seed forecast if offline/timeout
         val df = SimpleDateFormat("HH:mm", Locale.KOREA)
@@ -90,7 +93,7 @@ object UvWeatherService {
 
         return UvData(
             uvIndex = mockUv,
-            locationName = "광화문 광장 (시뮬레이션)",
+            locationName = "$resolvedLocationName (시뮬레이션)",
             latitude = lat,
             longitude = lgt,
             lastUpdated = df.format(Date()),
@@ -100,5 +103,49 @@ object UvWeatherService {
                 HourlyForecast("18시", 1)
             )
         )
+    }
+
+    private fun resolveLocationName(context: Context, lat: Double, lgt: Double): String {
+        if (!Geocoder.isPresent()) {
+            return coordinateLabel(lat, lgt)
+        }
+
+        return try {
+            val geocoder = Geocoder(context, Locale.KOREA)
+            @Suppress("DEPRECATION")
+            val address = geocoder.getFromLocation(lat, lgt, 1)?.firstOrNull()
+            formatAddress(address) ?: coordinateLabel(lat, lgt)
+        } catch (e: Exception) {
+            Log.w(TAG, "Reverse geocoding failed, falling back to coordinates", e)
+            coordinateLabel(lat, lgt)
+        }
+    }
+
+    private fun formatAddress(address: Address?): String? {
+        if (address == null) {
+            return null
+        }
+
+        val primary = listOf(
+            address.locality,
+            address.subAdminArea,
+            address.adminArea
+        ).firstOrNull { !it.isNullOrBlank() }?.trim()
+
+        val secondary = listOf(
+            address.subLocality,
+            address.thoroughfare,
+            address.featureName
+        ).firstOrNull { !it.isNullOrBlank() }?.trim()
+
+        val parts = listOfNotNull(primary, secondary)
+            .distinct()
+            .filter { it.isNotBlank() }
+
+        return if (parts.isEmpty()) null else parts.joinToString(" ")
+    }
+
+    private fun coordinateLabel(lat: Double, lgt: Double): String {
+        return String.format(Locale.KOREA, "위도 %.2f, 경도 %.2f", lat, lgt)
     }
 }

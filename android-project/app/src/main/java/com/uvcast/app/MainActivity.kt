@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
                     val lgt = loc?.longitude ?: 126.9780
                     
                     CoroutineScope(Dispatchers.IO).launch {
-                        val uvData = UvWeatherService.fetchUvData(lat, lgt)
+                        val uvData = UvWeatherService.fetchUvData(this@MainActivity, lat, lgt)
                         withContext(Dispatchers.Main) {
                             uvIndexState.value = uvData.uvIndex
                             locationNameState.value = uvData.locationName
@@ -111,10 +111,10 @@ class MainActivity : ComponentActivity() {
 
     private fun queryUvForecast(lat: Double, lgt: Double, fallbackCity: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val uvData = UvWeatherService.fetchUvData(lat, lgt)
+            val uvData = UvWeatherService.fetchUvData(this@MainActivity, lat, lgt)
             withContext(Dispatchers.Main) {
                 uvIndexState.value = uvData.uvIndex
-                locationNameState.value = "$fallbackCity (${uvData.locationName})"
+                locationNameState.value = if (uvData.locationName.startsWith("위도 ")) fallbackCity else uvData.locationName
                 lastUpdatedState.value = uvData.lastUpdated
                 isLoadingState.value = false
                 UvWidgetHelper.updateAllWidgets(this@MainActivity)

@@ -27,7 +27,7 @@ object UvWidgetHelper {
             // Retrieve coordinates (Seoul standard center, 37.56, 126.97)
             val lat = 37.5665
             val lgt = 126.9780
-            val uvData = UvWeatherService.fetchUvData(lat, lgt)
+            val uvData = UvWeatherService.fetchUvData(context, lat, lgt)
 
             // Helper to render RemoteViews
             ids2x1.forEach { id ->
