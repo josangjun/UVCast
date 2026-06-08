@@ -38,21 +38,34 @@ class MainActivity : ComponentActivity() {
     private var lastUpdatedState = mutableStateOf("-")
     private var isLoadingState = mutableStateOf(false)
     private var refreshIntervalState = mutableIntStateOf(0)
+    private var notifEnabledState = mutableStateOf(false)
+    private var notifThresholdState = mutableIntStateOf(7)
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
+        val locGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                         permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        val notifGranted = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            permissions[Manifest.permission.POST_NOTIFICATIONS] == true
+        } else true
+
+        if (locGranted) {
             fetchLocationAndUv()
-        } else {
-            Toast.makeText(this, "실시간 자외선 측정을 위해 위치 권한 수락이 필요합니다.", Toast.LENGTH_SHORT).show()
+        }
+        
+        if (notifEnabledState.value && !notifGranted) {
+            Toast.makeText(this, "알림 권한이 거부되어 위험 알림을 받을 수 없습니다.", Toast.LENGTH_SHORT).show()
+            updateNotifSettings(false, notifThresholdState.intValue)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // 알림 채널 초기화
+        UvNotificationHelper.createNotificationChannel(this)
+
         // 캐시 데이터가 있다면 즉시 UI 상태에 먼저 로드
         loadCachedUvData()
         
@@ -85,6 +98,20 @@ class MainActivity : ComponentActivity() {
             lastUpdatedState.value = cached.lastUpdated
         }
         refreshIntervalState.intValue = UvLocationStore.loadRefreshInterval(this)
+        notifEnabledState.value = UvLocationStore.loadNotifEnabled(this)
+        notifThresholdState.intValue = UvLocationStore.loadNotifThreshold(this)
+    }
+
+    private fun updateNotifSettings(enabled: Boolean, threshold: Int) {
+        if (enabled && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
+                // 권한 요청 결과에 따라 저장하도록 할 수도 있지만, 일단 상태만 변경하고 저장 시도
+            }
+        }
+        UvLocationStore.saveNotifSettings(this, enabled, threshold)
+        notifEnabledState.value = enabled
+        notifThresholdState.intValue = threshold
     }
 
     private fun updateRefreshInterval(minutes: Int) {
@@ -276,6 +303,58 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            // Notification Setting Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF18181B))
+            ) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "🔔 자외선 위험 알림",
+                            fontSize = 14.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Switch(
+                            checked = notifEnabledState.value,
+                            onCheckedChange = { updateNotifSettings(it, notifThresholdState.intValue) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color(0xFFF97316),
+                                checkedTrackColor = Color(0xFF431407)
+                            )
+                        )
+                    }
+
+                    if (notifEnabledState.value) {
+                        Text(
+                            text = "알림 기준 지수: ${notifThresholdState.intValue} (${getUvOpinionShort(notifThresholdState.intValue)})",
+                            fontSize = 12.sp,
+                            color = Color(0xFFA1A1AA)
+                        )
+                        Slider(
+                            value = notifThresholdState.intValue.toFloat(),
+                            onValueChange = { updateNotifSettings(true, it.toInt()) },
+                            valueRange = 1f..11f,
+                            steps = 9,
+                            colors = SliderDefaults.colors(
+                                thumbColor = Color(0xFFF97316),
+                                activeTrackColor = Color(0xFFF97316),
+                                inactiveTrackColor = Color(0xFF27272A)
+                            )
+                        )
+                    }
+                }
+            }
+
             // Refresh Setting Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -353,6 +432,16 @@ class MainActivity : ComponentActivity() {
             uv <= 7 -> "주의 (장시간 노출 삼가)"
             uv <= 10 -> "위험 (양산 및 모자 지참 필수)"
             else -> "치명 (외출을 즉시 보류하십시오)"
+        }
+    }
+
+    private fun getUvOpinionShort(uv: Int): String {
+        return when {
+            uv <= 2 -> "낮음"
+            uv <= 5 -> "보통"
+            uv <= 7 -> "높음"
+            uv <= 10 -> "매우 높음"
+            else -> "위험"
         }
     }
 }

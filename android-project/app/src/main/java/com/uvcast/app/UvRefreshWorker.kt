@@ -21,10 +21,26 @@ class UvRefreshWorker(
             // 모든 위젯 갱신
             UvWidgetHelper.renderAllWidgetsWithData(applicationContext, uvData)
             
+            // 자외선 알림 체크
+            checkAndSendNotification(uvData)
+            
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
             Result.retry()
+        }
+    }
+
+    private fun checkAndSendNotification(uvData: UvData) {
+        val enabled = UvLocationStore.loadNotifEnabled(applicationContext)
+        val threshold = UvLocationStore.loadNotifThreshold(applicationContext)
+
+        if (enabled && uvData.uvIndex >= threshold) {
+            UvNotificationHelper.sendUvAlert(
+                applicationContext,
+                uvData.uvIndex,
+                uvData.locationName
+            )
         }
     }
 }

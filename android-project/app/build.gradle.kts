@@ -4,9 +4,14 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// 릴리즈 빌드 결과물 이름을 uvcast-release.apk로 만들기 위한 설정
+base {
+    archivesName.set("uvcast")
+}
+
 android {
     namespace = "com.uvcast.app"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.uvcast.app"
@@ -50,19 +55,10 @@ android {
     buildFeatures {
         compose = true
     }
+    // Kotlin 2.0 이상에서는 composeOptions 대신 compose compiler plugin을 사용합니다.
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
-    applicationVariants.all {
-        val variant = this
-        variant.outputs.all {
-            val output = this as? com.android.build.gradle.api.ApkVariantOutput
-            if (variant.name == "release") {
-                output?.outputFileName = "uvcast-release.apk"
-            }
         }
     }
 }
@@ -80,14 +76,14 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     
-    // Play Services Location (for real Android GPS coordinates)
+    // Play Services Location
     implementation("com.google.android.gms:play-services-location:21.1.0")
     
-    // OkHttp (for web API queries to fetch UV index)
+    // OkHttp & Coroutines
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // WorkManager for background refresh
+    // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     testImplementation("junit:junit:4.13.2")
