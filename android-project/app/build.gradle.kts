@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -49,9 +50,6 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
-    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -59,10 +57,11 @@ android {
     }
 
     applicationVariants.all {
-        outputs.all {
-            val output = this as com.android.build.gradle.outputs.BaseVariantOutput
-            if (name == "release") {
-                output.outputFileName = "uvcast-release.apk"
+        val variant = this
+        variant.outputs.all {
+            val output = this as? com.android.build.gradle.api.ApkVariantOutput
+            if (variant.name == "release") {
+                output?.outputFileName = "uvcast-release.apk"
             }
         }
     }
@@ -87,6 +86,9 @@ dependencies {
     // OkHttp (for web API queries to fetch UV index)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // WorkManager for background refresh
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

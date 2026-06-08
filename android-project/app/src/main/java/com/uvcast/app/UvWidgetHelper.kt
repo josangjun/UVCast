@@ -93,7 +93,7 @@ object UvWidgetHelper {
             val views = RemoteViews(context.packageName, R.layout.widget_layout_2x1)
             views.setTextViewText(R.id.widget_location_2x1, "위치 정보 갱신 중...")
             views.setTextViewText(R.id.widget_uv_num_2x1, "-")
-            views.setTextViewText(R.id.widget_level_text_2x1, "자외선 수준: 측정 중")
+            views.setTextViewText(R.id.widget_level_text_2x1, "자외선 수준: 측정 중...")
             
             val clickIntent = Intent(context, UvWidgetProvider2x1::class.java).apply {
                 action = ACTION_REFRESH_WIDGET
@@ -101,7 +101,7 @@ object UvWidgetHelper {
             val pendingIntent = PendingIntent.getBroadcast(
                 context, id, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            views.setOnClickPendingIntent(R.id.btn_refresh_2x1, pendingIntent)
+            views.setOnClickPendingIntent(R.id.widget_background_2x1, pendingIntent)
             widgetManager.updateAppWidget(id, views)
         }
 
@@ -141,7 +141,7 @@ object UvWidgetHelper {
     }
 
     // 4. 순수 UI 렌더링 함수
-    private fun renderAllWidgetsWithData(context: Context, uvData: UvData) {
+    fun renderAllWidgetsWithData(context: Context, uvData: UvData) {
         val widgetManager = AppWidgetManager.getInstance(context)
         
         val ids2x1 = widgetManager.getAppWidgetIds(ComponentName(context, UvWidgetProvider2x1::class.java))
@@ -160,7 +160,7 @@ object UvWidgetHelper {
             val pendingIntent = PendingIntent.getBroadcast(
                 context, id, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            views.setOnClickPendingIntent(R.id.btn_refresh_2x1, pendingIntent)
+            views.setOnClickPendingIntent(R.id.widget_background_2x1, pendingIntent)
             widgetManager.updateAppWidget(id, views)
         }
 

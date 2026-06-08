@@ -22,12 +22,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.work.*
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
 
@@ -35,6 +37,7 @@ class MainActivity : ComponentActivity() {
     private var locationNameState = mutableStateOf("위치 확인 대기 중...")
     private var lastUpdatedState = mutableStateOf("-")
     private var isLoadingState = mutableStateOf(false)
+    private var refreshIntervalState = mutableIntStateOf(0)
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -80,6 +83,37 @@ class MainActivity : ComponentActivity() {
             uvIndexState.value = cached.uvIndex
             locationNameState.value = cached.locationName
             lastUpdatedState.value = cached.lastUpdated
+        }
+        refreshIntervalState.intValue = UvLocationStore.loadRefreshInterval(this)
+    }
+
+    private fun updateRefreshInterval(minutes: Int) {
+        UvLocationStore.saveRefreshInterval(this, minutes)
+        refreshIntervalState.intValue = minutes
+        scheduleRefresh(minutes)
+        Toast.makeText(this, if (minutes > 0) "${minutes}분 간격 자동 갱신 설정됨" else "자동 갱신 꺼짐", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun scheduleRefresh(intervalMinutes: Int) {
+        val workManager = WorkManager.getInstance(this)
+        workManager.cancelUniqueWork("uv_refresh_work")
+
+        if (intervalMinutes > 0) {
+            val refreshRequest = PeriodicWorkRequestBuilder<UvRefreshWorker>(
+                intervalMinutes.toLong(), TimeUnit.MINUTES
+            )
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+                )
+                .build()
+
+            workManager.enqueueUniquePeriodicWork(
+                "uv_refresh_work",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                refreshRequest
+            )
         }
     }
 
@@ -146,6 +180,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MainScreen() {
         val scrollState = rememberScrollState()
@@ -237,6 +272,47 @@ class MainActivity : ComponentActivity() {
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
+                    }
+                }
+            }
+
+            // Refresh Setting Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF18181B))
+            ) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "🔄 자동 갱신 주기 설정",
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val intervals = listOf(0 to "안함", 30 to "30분", 60 to "1시간", 180 to "3시간")
+                        intervals.forEach { (min, label) ->
+                            FilterChip(
+                                selected = refreshIntervalState.intValue == min,
+                                onClick = { updateRefreshInterval(min) },
+                                label = { Text(label, fontSize = 12.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFFF97316),
+                                    selectedLabelColor = Color.White,
+                                    containerColor = Color(0xFF27272A),
+                                    labelColor = Color(0xFFA1A1AA)
+                                ),
+                                border = null,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
             }

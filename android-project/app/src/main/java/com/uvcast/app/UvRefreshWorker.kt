@@ -3,6 +3,7 @@ package com.uvcast.app
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import androidx.work.ListenableWorker.Result
 
 class UvRefreshWorker(
     context: Context,
