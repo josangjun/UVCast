@@ -86,6 +86,7 @@ class MainActivity : ComponentActivity() {
                 .addOnSuccessListener { loc ->
                     val lat = loc?.latitude ?: 37.5665
                     val lgt = loc?.longitude ?: 126.9780
+                    UvLocationStore.save(this, lat, lgt)
                     
                     CoroutineScope(Dispatchers.IO).launch {
                         val uvData = UvWeatherService.fetchUvData(this@MainActivity, lat, lgt)
@@ -110,6 +111,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun queryUvForecast(lat: Double, lgt: Double, fallbackCity: String) {
+        UvLocationStore.save(this, lat, lgt)
         CoroutineScope(Dispatchers.IO).launch {
             val uvData = UvWeatherService.fetchUvData(this@MainActivity, lat, lgt)
             withContext(Dispatchers.Main) {

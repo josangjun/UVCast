@@ -24,9 +24,7 @@ object UvWidgetHelper {
         val ids4x2 = widgetManager.getAppWidgetIds(ComponentName(context, UvWidgetProvider4x2::class.java))
 
         CoroutineScope(Dispatchers.IO).launch {
-            // Retrieve coordinates (Seoul standard center, 37.56, 126.97)
-            val lat = 37.5665
-            val lgt = 126.9780
+            val (lat, lgt) = UvLocationStore.load(context) ?: (37.5665 to 126.9780)
             val uvData = UvWeatherService.fetchUvData(context, lat, lgt)
 
             // Helper to render RemoteViews
